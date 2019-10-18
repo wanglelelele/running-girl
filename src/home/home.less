@@ -1,0 +1,183 @@
+
+.home-page {
+    width: 100%;
+    height: 100%;
+    // background-image: url(../assets/elf/elf.jpg);
+    // background-size: 100% 100%;
+    // background-repeat: no-repeat
+    .wrapper {
+        height: 100%;
+        width: 100%;
+        font-family: "lobster_tworegular";
+        background: #34495e;
+        background-image: url("../assets/img/snow_bg1.png"), url("../assets/img/snow_bg2.png");
+        -webkit-animation: snow 20s linear infinite;
+        -moz-animation: snow 20s linear infinite;
+        animation: snow 20s linear infinite;
+        min-height: 100%;
+        z-index: 0;
+        .orientationWrapper {
+            display: none;
+            position: relative;
+            text-align: center;
+            color: #eee;
+            top: 50%;
+            font-size: 2em;
+            transform: translateY(-50%);
+        }
+        .contentWrapper {
+            position: relative;
+            top: 50%;
+            background-color: #E74C3C;
+            transform: translateY(-50%);
+            height: 350px;
+            .title {
+                position: relative;
+                top: -130px;
+                font-size: 5em;
+                color: #eee;
+                font-family: "mountains_of_christmasregular" !important;
+                text-align: center;
+                z-index: 2;
+            }
+            .subtitle {
+                position: relative;
+                font-size: 1.5em;
+                color: #eee;
+                text-align: center;
+                z-index: 2;
+            }
+            .top {
+                top: -80px;
+                font-size: 2.5em;
+            }
+            .bottom {
+                top: 100px;
+            }
+            .play {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translateY(-50%) translateX(-50%);
+                border-radius: 50%;
+                background-color: #FFFFFF;
+                color: #E74C3C;
+                text-align: center;
+                width: 120px;
+                height: 120px;
+                line-height: 120px;
+                font-size: 2em;
+                z-index: 3;
+            }
+            .playRipple {
+                z-index: 2;
+            }
+            .rippleEffect {
+                -webkit-animation: ripple-anim 1s;
+                -moz-animation: ripple-anim 1s;
+                animation: ripple-anim 1s;
+                -webkit-animation-fill-mode: forwards;
+                -moz-animation-fill-mode: forwards;
+                animation-fill-mode: forwards;
+            }
+            .author {
+                width: 100%;
+                position: absolute;
+                bottom: -100px;
+                text-align: center;
+                color: white;
+                font-size: 1em;
+                letter-spacing: 2px;
+                z-index: 1;
+                .red {
+                    color: #E74C3C;
+                }
+                a {
+                    color: #2ecc71;
+                    text-decoration: none;
+                }
+            }
+        }
+    }
+}
+.lost,
+.message,
+.ready {
+    // display: none;
+    width: 100%;
+    text-align: center;
+    font-family: "lobster_tworegular";
+    color: #eee;
+    font-size: 3em;
+    position: absolute;
+    top: 50%;
+    transform: translatey(-50%);
+    text-shadow: 1px 1px black;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+.score {
+    // display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-family: "lobster_tworegular";
+    color: #eee;
+    font-size: 3em;
+    text-shadow: 1px 1px black;
+}
+@-webkit-keyframes fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+@-moz-keyframes fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+@keyframes fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+@-webkit-keyframes ripple-anim {
+    from {
+        transform: translateY(-50%) translateX(-50%) scale(1);
+    }
+    to {
+        transform: translateY(-50%) translateX(-50%) scale(50);
+    }
+}
+@-moz-keyframes ripple-anim {
+    from {
+        transform: translateY(-50%) translateX(-50%) scale(1);
+    }
+    to {
+        transform: translateY(-50%) translateX(-50%) scale(50);
+    }
+}
+@keyframes ripple-anim {
+    from {
+        transform: translateY(-50%) translateX(-50%) scale(1);
+    }
+    to {
+        transform: translateY(-50%) translateX(-50%) scale(50);
+    }
+}
+.fadeout {
+    -webkit-animation: fade-out 1s;
+    -moz-animation: fade-out 1s;
+    animation: fade-out 1s;
+    -webkit-animation-fill-mode: forwards;
+    -moz-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+}
