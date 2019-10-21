@@ -1,6 +1,8 @@
 import React from 'react'
 import * as BABYLON from 'babylonjs'
 import './game.less'
+import '../assets/babylon/elf/elf.jpg'
+import '../assets/babylon/elf/elf.fbx'
 import bgImg from '../assets/img/background.jpg'
 import elfUrl from '../assets/babylon/elf/elf.babylon'
 // import 'babylonjs-loaders';

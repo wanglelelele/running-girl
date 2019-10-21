@@ -42,12 +42,12 @@ module.exports = {
                 ],
             }, 
             {
-                test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-                loader: 'url-loader',
-                exclude: util.resolve('../src/assets/babylon'),
+                test: /\.(babylon|fbx|png|jpe?g|gif|svg)(\?.*)?$/,
+                loader: 'file-loader',
+                // exclude: util.resolve('../src/assets/babylon/*'),
                 options: {
                     limit: 10000, // url-loader 包含file-loader，这里不用file-loader, 小于10000B的图片base64的方式引入，大于10000B的图片以路径的方式导入
-                    name: 'static/img/[name].[ext]'
+                    name: '[name].[ext]'
                 }
             }, 
             {
@@ -58,24 +58,17 @@ module.exports = {
                     name: 'static/fonts/[name].[hash:7].[ext]'
                 }
             },
-            {
-                test: /\.(babylon|fbx|png|jpe?g|gif|svg)(\?.*)?$/,
-                loader: 'url-loader',
-                exclude: util.resolve('../src/assets/img'),
-                options: {
-                    // publicPath: 'assets/',
-                    limit: 10000, // 小于10000B的图片base64的方式引入，大于10000B的图片以路径的方式导入
-                    name: 'static/babylon/[name].[hash:7].[ext]'
-                }
-            }
+            // {
+            //     test: /\.(babylon|fbx|png|jpg)(\?.*)?$/,
+            //     loader: 'file-loader',
+            //     // exclude: util.resolve('../src/assets/img'),
+            //     options: {
+            //         // publicPath: 'assets/',
+            //         limit: 10000, // 小于10000B的图片base64的方式引入，大于10000B的图片以路径的方式导入
+            //         name: '[name].[hash:7].[ext]'
+            //     }
+            // }
         ]
     },
-    plugins: [
-        new CopyPlugin([
-          {
-            from: "../src/assets/babylon/*",
-            to: "../dist/static/babylon/",
-          },
-        ])
-      ],
+    
 }
