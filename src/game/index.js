@@ -42,6 +42,9 @@ class Game extends React.Component {
         camera.attachControl(this.engine.getRenderingCanvas());
         new BABYLON.Layer("bg", bgImg, scene, true);
         this.loadBabyLon(scene)
+        this.engine.runRenderLoop(() => {
+            scene.render()
+        })
         // return scene
     }
     
