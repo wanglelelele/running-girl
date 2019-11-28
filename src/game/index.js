@@ -7,6 +7,7 @@ import bgImg from '../assets/img/background.jpg'
 import elfUrl from '../assets/babylon/elf/elf.babylon'
 import snowImg from '../assets/img/snow.png'
 import Player from '../player'
+
 // import 'babylonjs-loaders';
 // import snowmanUrl from '../assets/snowman/snowman.babylon'
 // import giftUrl from '../assets/gift/gift.babylon'
@@ -64,10 +65,20 @@ class Game extends React.Component {
         }
         loader.onFinish = (task) =>{
             console.log('taske', task)
-            this.engine.runRenderLoop(() => {
-                scene.render()
-            })
             this.initGame()
+
+            scene.executeWhenReady(()=> {
+                // $(".ready").show();
+                // $(".score").show();
+
+                this.engine.runRenderLoop(()=>{
+                    scene.render();
+                });
+
+            });
+            // this.engine.runRenderLoop(() => {
+            //     scene.render()
+            // })
         }
         loader.load()
     }
@@ -106,7 +117,7 @@ class Game extends React.Component {
         snow.maxAngularSpeed = 2*Math.PI;
         snow.updateSpeed = 0.005;
         snow.start()
-        return snow
+        // return snow
     }   
     render() {
         let {isShowReady} = this.state
