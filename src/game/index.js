@@ -7,7 +7,7 @@ import bgImg from '../assets/img/background.jpg'
 import elfUrl from '../assets/babylon/elf/elf.babylon'
 import snowImg from '../assets/img/snow.png'
 import Player from '../player'
-
+import Lanes from '../lanes'
 // import 'babylonjs-loaders';
 // import snowmanUrl from '../assets/snowman/snowman.babylon'
 // import giftUrl from '../assets/gift/gift.babylon'
@@ -67,12 +67,12 @@ class Game extends React.Component {
             console.log('taske', task)
             this.initGame()
 
-            scene.executeWhenReady(()=> {
+            this.scene.executeWhenReady(()=> {
                 // $(".ready").show();
                 // $(".score").show();
 
                 this.engine.runRenderLoop(()=>{
-                    scene.render();
+                    this.scene.render();
                 });
 
             });
@@ -83,6 +83,7 @@ class Game extends React.Component {
         loader.load()
     }
     initGame = () =>{
+        this.lanes = new Lanes({game: this})
         this.snow = this.initParticles()
         this.player = new Player({game: this})
         this.scene.registerBeforeRender(()=>{
@@ -97,7 +98,7 @@ class Game extends React.Component {
         let snow = new BABYLON.ParticleSystem('particle', 2000, this.scene);
         snow.particleTexture = new BABYLON.Texture(snowImg, this.scene);
         let source = BABYLON.Mesh.CreateBox("source", 1.0, this.scene);
-        snow.emitter = new BABYLON.Vector3(0, 10, 3);
+        snow.emitter = new BABYLON.Vector3(0, 10, 0);
         snow.minLifeTime = 0.3
         snow.maxLifeTime = 2;
         snow.colorDead = new BABYLON.Color4(1, 1, 1, 0.0);
@@ -117,7 +118,7 @@ class Game extends React.Component {
         snow.maxAngularSpeed = 2*Math.PI;
         snow.updateSpeed = 0.005;
         snow.start()
-        // return snow
+        return snow
     }   
     render() {
         let {isShowReady} = this.state
@@ -126,9 +127,9 @@ class Game extends React.Component {
                 {isShowReady && <div className="ready" onClick={this.doStart}>
                     Space to start!
                 </div>}
-                <div className="score">
+                {isShowReady && <div className="score">
                     0
-                </div>
+                </div>}
                 <canvas id="renderCanvas"></canvas>
                 <div></div>
             </div>
