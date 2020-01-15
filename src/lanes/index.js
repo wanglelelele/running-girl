@@ -39,5 +39,8 @@ class Lane {
             }
         }
      }
+     getLanePositionX(index){
+        return this.lanes[index * this.maxNumber].position.x
+     }
  }
  export default Lane

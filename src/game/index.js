@@ -8,10 +8,9 @@ import elfUrl from '../assets/babylon/elf/elf.babylon'
 import snowImg from '../assets/img/snow.png'
 import Player from '../player'
 import Lanes from '../lanes'
-// import 'babylonjs-loaders';
-// import snowmanUrl from '../assets/snowman/snowman.babylon'
-// import giftUrl from '../assets/gift/gift.babylon'
-// import rockUrl from '../assets/rock/rochers.babylon'
+import snowmanUrl from '../assets/babylon/snowman/snowman.babylon'
+import giftUrl from '../assets/babylon/gift/gift.babylon'
+import rockUrl from '../assets/babylon/rock/rochers.babylon'
 
 class Game extends React.Component {
     constructor(props){
@@ -56,6 +55,7 @@ class Game extends React.Component {
     
     loadBabyLon = (scene) =>{
         let loader = new BABYLON.AssetsManager(scene);
+        // girl
         let elf = loader.addMeshTask('elf', '', elfUrl, '')
         elf.onSuccess = (t) =>{
             this.assets[t.name] = {meshes: t.loadedMeshes, skeleton: t.loadedSkeletons[0]};
@@ -63,6 +63,13 @@ class Game extends React.Component {
         elf.onError = (err) =>{
             console.log('err', err)
         }
+        // snowman
+        let snowman = loader.addMeshTask('snowman', '', snowmanUrl, '')
+        snowman.onSuccess = (t) =>{
+            let snowmanMesh = new BABYLON.Mesh("snowman", this.scene)
+            this.assets[t.name] = {}
+        }
+
         loader.onFinish = (task) =>{
             console.log('taske', task)
             this.initGame()
