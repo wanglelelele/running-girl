@@ -4,24 +4,28 @@ import './game.less'
 import '../assets/babylon/elf/elf.jpg'
 import '../assets/babylon/elf/elf.fbx'
 import bgImg from '../assets/img/background.jpg'
-import elfUrl from '../assets/babylon/elf/elf.babylon'
 import snowImg from '../assets/img/snow.png'
-import Player from '../player'
-import Lanes from '../lanes'
+import elfUrl from '../assets/babylon/elf/elf.babylon'
 import snowmanUrl from '../assets/babylon/snowman/snowman.babylon'
 import giftUrl from '../assets/babylon/gift/gift.babylon'
 import rockUrl from '../assets/babylon/rock/rochers.babylon'
+import Player from '../player'
+import Lanes from '../lanes'
+import Obstacle from '../obstacle'
 
 class Game extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props)
-        
+        this.obstacleTimer = -1
+        this.obstacleSpawnTime = 2000
+        this.gamespeed = 0
+        this.score = 0
     }
     state = {
         isShowReady: true
     }
     gamespeed = 0;
-    assets  = [];
+    assets = [];
 
     componentDidMount() {
         let canvas = document.getElementById('renderCanvas')
@@ -35,50 +39,74 @@ class Game extends React.Component {
         this.initScene()
     }
 
-    doStart = () =>{
-        this.setState({isShowReady: false})
+    doStart = () => {
+        this.gamespeed = 0
+        this.score = 0
+        this.setState({ isShowReady: false })
+        this.gamespeed = 0.2;
+        this.scene.activeCamera.target.z = 0;
     }
 
     initScene = () => {
         let scene = new BABYLON.Scene(this.engine);
-        let camera = new BABYLON.ArcRotateCamera("", -2.34432, 1.08, 20, new BABYLON.Vector3(0,0,6), scene);
+        let camera = new BABYLON.ArcRotateCamera("", -2.34432, 1.08, 20, new BABYLON.Vector3(0, 0, 6), scene);
         camera.attachControl(this.engine.getRenderingCanvas());
-        var h = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0,1,0), scene);
+        var h = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
         h.intensity = 0.3;
         new BABYLON.Layer("bg", bgImg, scene, true);
         // 启动
         this.scene = scene
         this.loadBabyLon(scene)
-        
+
         // return scene
     }
-    
-    loadBabyLon = (scene) =>{
+
+    loadBabyLon = (scene) => {
         let loader = new BABYLON.AssetsManager(scene);
         // girl
         let elf = loader.addMeshTask('elf', '', elfUrl, '')
-        elf.onSuccess = (t) =>{
-            this.assets[t.name] = {meshes: t.loadedMeshes, skeleton: t.loadedSkeletons[0]};
+        elf.onSuccess = (t) => {
+            this.assets[t.name] = { meshes: t.loadedMeshes, skeleton: t.loadedSkeletons[0] };
         }
-        elf.onError = (err) =>{
+        elf.onError = (err) => {
             console.log('err', err)
         }
-        // snowman
+        // snowman only one mesh
         let snowman = loader.addMeshTask('snowman', '', snowmanUrl, '')
-        snowman.onSuccess = (t) =>{
+        snowman.onSuccess = (t) => {
             let snowmanMesh = new BABYLON.Mesh("snowman", this.scene)
-            this.assets[t.name] = {}
+            t.loadedMeshes.forEach(function (m) {
+                m.parent = snowmanMesh;
+            })
+            snowmanMesh.scaling.scaleInPlace(0.075)
+            snowmanMesh.rotation.y = -Math.PI / 2
+            snowmanMesh.setEnabled(false)
+            this.assets[t.name] = { meshes: snowmanMesh }
+        }
+        // rock only one mesh
+        const rockTask = loader.addMeshTask('rock', '', rockUrl, '')
+        rockTask.onSuccess = task => {
+            const { name, loadedMeshes } = task
+            const rock = loadedMeshes[0]
+            rock.convertToFlatShadedMesh()
+            rock.position.y = 0.5
+            rock.material.subMaterials[0].emissiveColor = BABYLON.Color3.White()
+            rock.material.subMaterials[1].diffuseColor = BABYLON.Color3.FromInts(66, 87, 108)
+            rock.setEnabled(false)
+            this.assets[name] = {
+                meshes: rock
+            }
         }
 
-        loader.onFinish = (task) =>{
+        loader.onFinish = (task) => {
             console.log('taske', task)
             this.initGame()
 
-            this.scene.executeWhenReady(()=> {
+            this.scene.executeWhenReady(() => {
                 // $(".ready").show();
                 // $(".score").show();
 
-                this.engine.runRenderLoop(()=>{
+                this.engine.runRenderLoop(() => {
                     this.scene.render();
                 });
 
@@ -89,19 +117,28 @@ class Game extends React.Component {
         }
         loader.load()
     }
-    initGame = () =>{
-        this.lanes = new Lanes({game: this})
+    initGame = () => {
+        this.lanes = new Lanes({ game: this })
         this.snow = this.initParticles()
-        this.player = new Player({game: this})
-        this.scene.registerBeforeRender(()=>{
+        this.player = new Player({ game: this })
+        this.ob = 
+        this.scene.registerBeforeRender(() => {
             let delta = this.engine.getDeltaTime(); // 1/60*1000
-            var deltap= delta * 60 /1000;
+            var deltap = delta * 60 / 1000;
             this.player.position.z += this.gamespeed * deltap;
-            this.scene.activeCamera.target.z = this.player.position.z+1;
-            this.snow.emitter.z = this.player.position.z-10;
+            this.scene.activeCamera.target.z = this.player.position.z + 1;
+            this.snow.emitter.z = this.player.position.z - 10;
+            if (this.obstacleTimer != -1) {
+                this.obstacleTimer -= this.engine.getDeltaTime();
+                if (this.obstacleTimer <= 0 && !this.player.dead) {
+                    this.ob.send();
+                    this.obstacleTimer = this.obstacleSpawnTime;
+                }
+            }
         })
+       
     }
-    initParticles = ()=>{
+    initParticles = () => {
         let snow = new BABYLON.ParticleSystem('particle', 2000, this.scene);
         snow.particleTexture = new BABYLON.Texture(snowImg, this.scene);
         let source = BABYLON.Mesh.CreateBox("source", 1.0, this.scene);
@@ -122,13 +159,13 @@ class Game extends React.Component {
         snow.direction1 = new BABYLON.Vector3(-7, 8, 3);
         snow.direction2 = new BABYLON.Vector3(7, 8, -3);
         snow.minAngularSpeed = 0;
-        snow.maxAngularSpeed = 2*Math.PI;
+        snow.maxAngularSpeed = 2 * Math.PI;
         snow.updateSpeed = 0.005;
         snow.start()
         return snow
-    }   
+    }
     render() {
-        let {isShowReady} = this.state
+        let { isShowReady } = this.state
         return (
             <div className="game-page">
                 {isShowReady && <div className="ready" onClick={this.doStart}>

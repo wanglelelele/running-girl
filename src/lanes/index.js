@@ -42,5 +42,8 @@ class Lane {
      getLanePositionX(index){
         return this.lanes[index * this.maxNumber].position.x
      }
+     recycle(){
+        
+     }
  }
  export default Lane
