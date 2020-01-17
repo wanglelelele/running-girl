@@ -40,11 +40,44 @@ class Game extends React.Component {
     }
 
     doStart = () => {
-        this.gamespeed = 0
-        this.score = 0
-        this.setState({ isShowReady: false })
-        this.gamespeed = 0.2;
-        this.scene.activeCamera.target.z = 0;
+        // Check if collision between player and obstacles
+        const checkCollisions = () => this.ob.obstacles.forEach(obstacle => {
+            if (this.player.isCollidingWith(obstacle)) {
+                console.log('obs-----', obstacle)
+                this.dead()
+                this.scene.unregisterBeforeRender(checkCollisions);
+            }
+        })
+        this.scene.registerBeforeRender(checkCollisions);
+        this.score = 0;
+        this.gamespeed = 0;
+
+        // Init player
+        this.player.init();
+        this.player.position.x = this.lanes.getMiddleX();
+        this.lanes.init();
+        let top = this.player.position.clone();
+        top.y += 10;
+        top.z -= 10;
+        this.snow.emitter = top;
+       
+        // 删除障碍
+        let obstacles = this.ob.obstacles;
+        obstacles.forEach(function (o) {
+            o.dispose();
+        });
+        this.ob.obstacles = [];
+        this.obstacleTimer = -1;
+        // remove all gifts
+        let gifts = this.ob.gifts;
+        gifts.forEach(function (g) {
+            g.remove();
+        });
+        this.ob.gifts = [];
+        this.setState({ isShowReady: false },()=>{
+            this.gamespeed = 0.2;
+            this.obstacleTimer = this.obstacleSpawnTime
+        })
     }
 
     initScene = () => {
@@ -121,13 +154,20 @@ class Game extends React.Component {
         this.lanes = new Lanes({ game: this })
         this.snow = this.initParticles()
         this.player = new Player({ game: this })
-        this.ob = 
+        this.ob = new Obstacle(this);
+         // RECYCLE ELEMENTS
+         this.scene.registerBeforeRender(() => {
+            this.lanes.recycle();
+            this.ob.recycle();
+        });
+        // MOVING FORWARD
         this.scene.registerBeforeRender(() => {
             let delta = this.engine.getDeltaTime(); // 1/60*1000
             var deltap = delta * 60 / 1000;
             this.player.position.z += this.gamespeed * deltap;
             this.scene.activeCamera.target.z = this.player.position.z + 1;
             this.snow.emitter.z = this.player.position.z - 10;
+            // console.log('obstacleTimer' + this.obstacleTimer)
             if (this.obstacleTimer != -1) {
                 this.obstacleTimer -= this.engine.getDeltaTime();
                 if (this.obstacleTimer <= 0 && !this.player.dead) {
@@ -136,7 +176,37 @@ class Game extends React.Component {
                 }
             }
         })
+
        
+        // INIT POSITION
+        this.doStart()
+
+    }
+    initPosition = () => {
+        this.score = 0;
+        this.gamespeed = 0;
+        // Init player
+        // this.player.init();
+        // this.player.position.x = this.lanes.getMiddleX();
+        // this.sapinous.init();
+        // this.lanes.init();
+        // let top = this.player.position.clone();
+        // top.y += 10;
+        // top.z -= 10;
+        // this.snow.emitter = top;
+        // Remove all obstacles
+        let obstacles = this.ob.obstacles;
+        obstacles.forEach(function (o) {
+            o.dispose();
+        });
+        this.ob.obstacles = [];
+        this.obstacleTimer = -1;
+        // remove all gifts
+        let gifts = this.ob.gifts;
+        gifts.forEach(function (g) {
+            g.remove();
+        });
+        this.ob.gifts = [];
     }
     initParticles = () => {
         let snow = new BABYLON.ParticleSystem('particle', 2000, this.scene);
@@ -163,6 +233,13 @@ class Game extends React.Component {
         snow.updateSpeed = 0.005;
         snow.start()
         return snow
+    }
+    dead = () => {
+        this.gamespeed = 0
+        this.player.die(() => {
+            this.setState({ isShowReady: true })
+            // this.doStart()
+        })
     }
     render() {
         let { isShowReady } = this.state

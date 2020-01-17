@@ -50,10 +50,10 @@ export default class Player extends BABYLON.TransformNode {
                 this.jump()
             }
             if(e.key == 'a' && this.direction == 0){
-                this.right()
+                this.left()
             }
             if(e.key == 'd' && this.direction == 0){
-                this.left()
+                this.right()
             }
            
         })
@@ -105,9 +105,21 @@ export default class Player extends BABYLON.TransformNode {
             }
         }
     }
-    die = () =>{
+    die = (callback) =>{
         this.dead = true;
         this.height = 1;
-        this.getScene().stopAnimation(this.skeleton)
+        //this.getScene().stopAnimation(this.skeleton);
+        this.getScene().beginAnimation(this.skeleton, 74, 138, false, 1.0, callback);
+    }
+    isCollidingWith =(otherMeshes) =>{
+        const children = this.getChildren()
+        let isColliding = false
+        children.forEach(child =>{
+            if(child.matchesTagsQuery('elf')){
+                isColliding = child.intersectsMesh(otherMeshes, true)
+                return
+            }
+        })
+        return isColliding
     }
 }
