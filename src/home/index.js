@@ -3,7 +3,6 @@ import './home.less'
 
 // 游戏组件
 import Game from '../game'
-console.log('game')
 class Home extends React.Component {
     state = {
         isStart: false,

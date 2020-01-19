@@ -1,6 +1,10 @@
+import Gift from '../gift'
+import { GrainPostProcess } from 'babylonjs'
+
 class Obstacle {
     constructor(game) {
         this.game = game
+        this.scene = game.scene
         this.obstacles = [] //所有障碍
         this.gifts = [] //所有礼物
     }
@@ -19,12 +23,11 @@ class Obstacle {
      */
     recycle() {
         // recycle gifts
-        console.log('recyle------------', this.gifts.length, this.obstacles.length)
         for (let g = 0; g < this.gifts.length; g++) {
             let gift = this.gifts[g]
             if (gift.position.z < this.game.player.position.z - 20) {
                 gift.dispose()
-                this.obstacles.splice(g, 1)
+                this.gifts.splice(g, 1)
                 // g--
             }
         }
@@ -32,9 +35,8 @@ class Obstacle {
         for (let o = 0; o < this.obstacles.length; o++) {
             let obstacle = this.obstacles[o]
             if (obstacle.position.z < this.game.player.position.z - 10) {
-                console.log('obs', obstacle)
                 obstacle.dispose()
-                this.gifts.splice(o, 1)
+                this.obstacles.splice(o, 1)
                 // o--
             }
         }
@@ -67,6 +69,7 @@ class Obstacle {
                 rock.setEnabled(true);
                 rock.position.x = this.game.lanes.getLanePositionX(i % 3);
                 rock.position.z = zpos;
+                rock.position.y = 1
                 this.obstacles.push(rock);
             } else if (pattern[i] == 2) {
                 // big rock
@@ -82,6 +85,12 @@ class Obstacle {
                 this.obstacles.push(snowman);
             } else if (pattern[i] == -1) {
                 // gift
+                // let gift = this.game.assets['gift'].meshes.clone('gift' + i)
+                let gift = new Gift(this.game, i)
+                gift.setEnabled(true)
+                gift.position.x = this.game.lanes.getLanePositionX(i % 3)
+                gift.position.z = zpos
+                this.gifts.push(gift)
 
             }
             if ((i + 1) % 3 == 0) {

@@ -20,6 +20,7 @@ class Game extends React.Component {
         this.obstacleSpawnTime = 2000
         this.gamespeed = 0
         this.score = 0
+        this.scoreRef = React.createRef();
     }
     state = {
         isShowReady: true
@@ -40,10 +41,10 @@ class Game extends React.Component {
     }
 
     doStart = () => {
+        this.score = 0
         // Check if collision between player and obstacles
         const checkCollisions = () => this.ob.obstacles.forEach(obstacle => {
             if (this.player.isCollidingWith(obstacle)) {
-                console.log('obs-----', obstacle)
                 this.dead()
                 this.scene.unregisterBeforeRender(checkCollisions);
             }
@@ -60,7 +61,7 @@ class Game extends React.Component {
         top.y += 10;
         top.z -= 10;
         this.snow.emitter = top;
-       
+
         // 删除障碍
         let obstacles = this.ob.obstacles;
         obstacles.forEach(function (o) {
@@ -71,10 +72,10 @@ class Game extends React.Component {
         // remove all gifts
         let gifts = this.ob.gifts;
         gifts.forEach(function (g) {
-            g.remove();
+            g.dispose();
         });
         this.ob.gifts = [];
-        this.setState({ isShowReady: false },()=>{
+        this.setState({ isShowReady: false }, () => {
             this.gamespeed = 0.2;
             this.obstacleTimer = this.obstacleSpawnTime
         })
@@ -130,9 +131,17 @@ class Game extends React.Component {
                 meshes: rock
             }
         }
+        // gift only one mesh
+        const giftTask = loader.addMeshTask('gift', '', giftUrl, '')
+        giftTask.onSuccess = t => {
+            t.loadedMeshes[0].setEnabled(false)
+            t.loadedMeshes[0].position.y = 1;
+            t.loadedMeshes[0].material.emissiveTexture = t.loadedMeshes[0].material.diffuseTexture;
+            this.assets[t.name] = { meshes: t.loadedMeshes[0] };
+            
+        }
 
         loader.onFinish = (task) => {
-            console.log('taske', task)
             this.initGame()
 
             this.scene.executeWhenReady(() => {
@@ -155,8 +164,8 @@ class Game extends React.Component {
         this.snow = this.initParticles()
         this.player = new Player({ game: this })
         this.ob = new Obstacle(this);
-         // RECYCLE ELEMENTS
-         this.scene.registerBeforeRender(() => {
+        // RECYCLE ELEMENTS
+        this.scene.registerBeforeRender(() => {
             this.lanes.recycle();
             this.ob.recycle();
         });
@@ -176,8 +185,20 @@ class Game extends React.Component {
                 }
             }
         })
+        // CHECK GIFT
+        const checkGifts = () => {
+            let gifts = this.ob.gifts
+            gifts.forEach((gift, i) => {
+                if (this.player.isCollidingWith(gift)) {
+                    this.addScore()
+                    gift.dispose()
+                    gifts.splice(i, 1)
+                }
+            })
+        }
+        this.scene.registerBeforeRender(checkGifts)
 
-       
+
         // INIT POSITION
         this.doStart()
 
@@ -204,7 +225,7 @@ class Game extends React.Component {
         // remove all gifts
         let gifts = this.ob.gifts;
         gifts.forEach(function (g) {
-            g.remove();
+            g.dispose();
         });
         this.ob.gifts = [];
     }
@@ -241,6 +262,12 @@ class Game extends React.Component {
             // this.doStart()
         })
     }
+    addScore = () => {
+        this.score++
+        // let scoreDom = document.querySelector('.score')
+        // console.log('score---', this.scoreRef.current)
+        this.scoreRef.current.innerHTML = this.score
+    }
     render() {
         let { isShowReady } = this.state
         return (
@@ -248,7 +275,7 @@ class Game extends React.Component {
                 {isShowReady && <div className="ready" onClick={this.doStart}>
                     Space to start!
                 </div>}
-                {isShowReady && <div className="score">
+                {<div className="score" ref={this.scoreRef}>
                     0
                 </div>}
                 <canvas id="renderCanvas"></canvas>

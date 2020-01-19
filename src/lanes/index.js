@@ -19,7 +19,6 @@ class Lane {
                 g.receiveShadows = true;
                 this.lanes.push(g);
             }
-            console.log('lanes', this.lanes)
         }
         this.init();
     }
@@ -47,7 +46,6 @@ class Lane {
         return this.lanes[c].position.x;
     }
     recycle() {
-        console.log('recyle---lane')
         let increase = false
         this.lanes.forEach((lane) => {
             if (lane.position.z < this.game.player.position.z - 25) {
