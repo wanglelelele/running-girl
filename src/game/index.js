@@ -3,15 +3,21 @@ import * as BABYLON from 'babylonjs'
 import './game.less'
 import '../assets/babylon/elf/elf.jpg'
 import '../assets/babylon/elf/elf.fbx'
+import '../assets/babylon/gift/giftCM.jpg'
+import '../assets/babylon/gate/cloture.jpg'
+
 import bgImg from '../assets/img/background.jpg'
 import snowImg from '../assets/img/snow.png'
 import elfUrl from '../assets/babylon/elf/elf.babylon'
 import snowmanUrl from '../assets/babylon/snowman/snowman.babylon'
 import giftUrl from '../assets/babylon/gift/gift.babylon'
 import rockUrl from '../assets/babylon/rock/rochers.babylon'
+import gateUrl from '../assets/babylon/gate/gate.babylon'
+import grassUrl from '../assets/img/grass2.jpg'
 import Player from '../player'
 import Lanes from '../lanes'
 import Obstacle from '../obstacle'
+import Spines from '../spines'
 
 class Game extends React.Component {
     constructor(props) {
@@ -57,6 +63,7 @@ class Game extends React.Component {
         this.player.init();
         this.player.position.x = this.lanes.getMiddleX();
         this.lanes.init();
+        this.spines.init()
         let top = this.player.position.clone();
         top.y += 10;
         top.z -= 10;
@@ -138,8 +145,16 @@ class Game extends React.Component {
             t.loadedMeshes[0].position.y = 1;
             t.loadedMeshes[0].material.emissiveTexture = t.loadedMeshes[0].material.diffuseTexture;
             this.assets[t.name] = { meshes: t.loadedMeshes[0] };
-            
+
         }
+        // gate only one mesh
+        const gateTask = loader.addMeshTask('gate', '', gateUrl, '')
+        gateTask.onSuccess = t => {
+            t.loadedMeshes[0].setEnabled(false)
+            t.loadedMeshes[0].rotation.y = Math.PI / 2
+            this.assets[t.name] = { meshes: t.loadedMeshes[0] }
+        }
+
 
         loader.onFinish = (task) => {
             this.initGame()
@@ -164,11 +179,28 @@ class Game extends React.Component {
         this.snow = this.initParticles()
         this.player = new Player({ game: this })
         this.ob = new Obstacle(this);
+        this.spines = new Spines(this)
+        this.spines.plant();
+
         // RECYCLE ELEMENTS
         this.scene.registerBeforeRender(() => {
             this.lanes.recycle();
             this.ob.recycle();
+            this.spines.recycle()
         });
+        // FLOOR GRASS
+        let floor = BABYLON.Mesh.CreateGround('floor', 1, 1, 1, this.scene)
+        floor.position.x = this.lanes.getMiddleX()
+        floor.scaling = new BABYLON.Vector3(12 * this.lanes.nblanes, 1, 200)
+        floor.position.z = 50
+        floor.material = new BABYLON.StandardMaterial('', this.scene)
+        floor.material.zOffset = 1
+        floor.material.diffuseTexture = new BABYLON.Texture(grassUrl, this.scene)
+        floor.material.specularColor = BABYLON.Color3.Black()
+        floor.material.diffuseTexture.uScale = 10
+        floor.material.diffuseTexture.vScale = 30
+        floor.receiveShadows = true
+        
         // MOVING FORWARD
         this.scene.registerBeforeRender(() => {
             let delta = this.engine.getDeltaTime(); // 1/60*1000
@@ -176,6 +208,9 @@ class Game extends React.Component {
             this.player.position.z += this.gamespeed * deltap;
             this.scene.activeCamera.target.z = this.player.position.z + 1;
             this.snow.emitter.z = this.player.position.z - 10;
+            floor.position.z = this.player.position.z + 50
+            floor.material.diffuseTexture.vOffset += this.gamespeed * 0.15 * deltap;
+
             // console.log('obstacleTimer' + this.obstacleTimer)
             if (this.obstacleTimer != -1) {
                 this.obstacleTimer -= this.engine.getDeltaTime();
